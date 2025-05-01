@@ -24,6 +24,7 @@ class TestIteratorBehaviour:
         assembler = Assembler(iter(input))
         assert expected == list(assembler)
 
+
 class TestAssemblyWithoutSymbols:
     
     def test_a_instructions_within_range(self):    # Max integer size is 2^15 - 1

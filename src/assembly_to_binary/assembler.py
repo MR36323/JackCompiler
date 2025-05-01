@@ -1,3 +1,5 @@
+WORD_SIZE = 16
+
 class Assembler:
 
     def __init__(self, assembly_lines):
@@ -12,7 +14,7 @@ class Assembler:
         if asm_instruction.startswith("@"):                         # If A-instruction
             asm_instruction = int(asm_instruction.lstrip("@"))
             bin_instruction = str(bin(asm_instruction)[2:])
-            while len(bin_instruction) < 16:                        # All A-instructions start with 0 and are 16-bits long               
+            while len(bin_instruction) < WORD_SIZE:                        # All A-instructions start with 0 and are 16-bits long               
                 bin_instruction = "".join(("0", bin_instruction))      
         
         return bin_instruction 
