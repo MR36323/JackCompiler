@@ -1,6 +1,7 @@
 import pytest
 from src.assembly_to_binary.assembler import Assembler
 
+
 class TestIteratorBehaviour:
 
     def test_next_method(self):
