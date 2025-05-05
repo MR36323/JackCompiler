@@ -20,7 +20,7 @@ class Assembler:
     
     def __translate_A_instruction(self, A_instruction):                                                 
         asm_instruction = int(A_instruction.lstrip("@"))
-        bin_instruction = str(bin(asm_instruction)[2:])
+        bin_instruction = str(bin((int(asm_instruction)) % 2**15))[2:]  # Max integer size is 2^15 - 1
         while len(bin_instruction) < self.word_length:         
             bin_instruction = "".join(("0", bin_instruction))      
         return bin_instruction

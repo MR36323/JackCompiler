@@ -33,3 +33,9 @@ class TestAssemblyWithoutSymbols:
         expected = ["0000000000000000", "0000000000000001", "0111111111111111"]
         assembler = Assembler(iter(input))
         assert expected == list(assembler)
+
+    def test_a_instructions_outside_range(self):    # Max integer size is 2^15 - 1
+        input = ["@32768", "@32769", "@65535"]
+        expected = ["0000000000000000", "0000000000000001", "0111111111111111"]
+        assembler = Assembler(iter(input))
+        assert expected == list(assembler)
