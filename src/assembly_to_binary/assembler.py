@@ -4,6 +4,31 @@ class Assembler:
         self.asm_lines = asm_lines
         self.word_length = 16
         self.__buffer = ""
+        self.symbol_table = {
+            "@R0": 0,
+            "@R1": 1,
+            "@R2": 2,
+            "@R3": 3,
+            "@R4": 4,
+            "@R5": 5,
+            "@R6": 6,
+            "@R7": 7,
+            "@R8": 8,
+            "@R9": 9,
+            "@R10": 10,
+            "@R11": 11,
+            "@R12": 12,
+            "@R13": 13,
+            "@R14": 14,
+            "@R15": 15,
+            "@SCREEN": 16384,
+            "@KBD": 24576,
+            "@SP": 0,
+            "@LCL": 1,
+            "@ARG": 2,
+            "@THIS": 3,
+            "@THAT": 4,
+        }
 
     def __iter__(self):
         return self
@@ -15,27 +40,31 @@ class Assembler:
         return self.__empty_buffer()       
     
     def __parse_and_translate(self, asm_instruction):
-        if asm_instruction.startswith("@"):                                    # A-instructions start with @
+        if asm_instruction.startswith("@"):                                 # A-instructions start with @
             return self.__translate_A_instruction(asm_instruction)
-        split_on_dest_seperator = asm_instruction.split("=")
-        try:
-            dest = split_on_dest_seperator[0]
-            asm_minus_dest = split_on_dest_seperator[1]
-        except IndexError:
-            dest = None
-            asm_minus_dest = split_on_dest_seperator[0]
-        split_on_jump_seperator = asm_minus_dest.split(";")    
-        try:
-            comp = split_on_jump_seperator[0]
-            jump = split_on_jump_seperator[1]
-        except IndexError:
-            comp = split_on_jump_seperator[0]
-            jump = None
-        return self.__translate_C_instruction(dest, comp, jump)
-    
+        else:                                                               # C-instructions contain comp, with optional dest and jump fields
+            split_on_dest_seperator = asm_instruction.split("=")                   
+            try:                                                            # C-instruction syntax: dest=comp;jump
+                dest = split_on_dest_seperator[0]
+                asm_minus_dest = split_on_dest_seperator[1]
+            except IndexError:
+                dest = None
+                asm_minus_dest = split_on_dest_seperator[0]
+            split_on_jump_seperator = asm_minus_dest.split(";")    
+            try:
+                comp = split_on_jump_seperator[0]
+                jump = split_on_jump_seperator[1]
+            except IndexError:
+                comp = split_on_jump_seperator[0]
+                jump = None
+            return self.__translate_C_instruction(dest, comp, jump)
+        
     def __translate_A_instruction(self, A_instruction):                                                 
-        asm_instruction = int(A_instruction.lstrip("@"))
-        bin_instruction = str(bin((int(asm_instruction)) % 2**15))[2:]         # Max integer size is 2^15 - 1
+        if A_instruction[1:].isnumeric():
+            asm_instruction = int(A_instruction.lstrip("@"))
+        elif A_instruction in self.symbol_table:
+            asm_instruction = self.symbol_table[A_instruction]
+        bin_instruction = str(bin((int(asm_instruction)) % 2**15))[2:]      # Max integer size is 2^15 - 1
         while len(bin_instruction) < self.word_length:         
             bin_instruction = "".join(("0", bin_instruction))      
         return bin_instruction
