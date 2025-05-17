@@ -1,7 +1,6 @@
 import pytest
 from src.assembly_to_binary.assembler import Assembler
 
-
 class TestIteratorBehaviour:
 
     def test_next_method(self):
@@ -24,7 +23,6 @@ class TestIteratorBehaviour:
         expected = ["0000000000000000", "0000000000000001", "0000000000000010"]
         assembler = Assembler(iter(input))
         assert expected == list(assembler)
-
 
 class TestAssemblyWithoutSymbols:
     
@@ -115,6 +113,57 @@ class TestAssemblyWithoutSymbols:
         for dest_comp in dests_comps:
             for jump in jumps.values():
                 bin_c_instructions.append("".join((dest_comp, jump)))
-
         assembler = Assembler(iter(asm_c_instructions))
         assert bin_c_instructions == list(assembler)
+
+class TestAssemblyWithSymbols:
+
+    def test_pre_defined_symbols(self):
+        pre_def_a_instructions = ['@R0', 
+                                  '@R1', 
+                                  '@R2', 
+                                  '@R3', 
+                                  '@R4', 
+                                  '@R5', 
+                                  '@R6', 
+                                  '@R7', 
+                                  '@R8', 
+                                  '@R9', 
+                                  '@R10', 
+                                  '@R11', 
+                                  '@R12', 
+                                  '@R13', 
+                                  '@R14', 
+                                  '@R15', 
+                                  '@SCREEN', 
+                                  '@KBD', 
+                                  '@SP', 
+                                  '@LCL', 
+                                  '@ARG', 
+                                  '@THIS', 
+                                  '@THAT']
+        expected_output = ['0000000000000000', 
+                           '0000000000000001', 
+                           '0000000000000010', 
+                           '0000000000000011', 
+                           '0000000000000100', 
+                           '0000000000000101', 
+                           '0000000000000110', 
+                           '0000000000000111', 
+                           '0000000000001000', 
+                           '0000000000001001', 
+                           '0000000000001010', 
+                           '0000000000001011', 
+                           '0000000000001100', 
+                           '0000000000001101', 
+                           '0000000000001110', 
+                           '0000000000001111', 
+                           '0100000000000000', 
+                           '0110000000000000', 
+                           '0000000000000000', 
+                           '0000000000000001', 
+                           '0000000000000010', 
+                           '0000000000000011', 
+                           '0000000000000100']
+        assembler = Assembler(iter(pre_def_a_instructions))
+        assert expected_output == list(assembler)
