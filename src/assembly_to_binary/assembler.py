@@ -43,21 +43,18 @@ class Assembler:
         if asm_instruction.startswith("@"):                                 # A-instructions start with @
             return self.__translate_A_instruction(asm_instruction)
         else:                                                               # C-instructions contain comp, with optional dest and jump fields
-            split_on_dest_seperator = asm_instruction.split("=")                   
-            try:                                                            # C-instruction syntax: dest=comp;jump
-                dest = split_on_dest_seperator[0]
-                asm_minus_dest = split_on_dest_seperator[1]
-            except IndexError:
+            split_on_dest_seperator = asm_instruction.split("=")            # C-instruction syntax: dest=comp;jump
+            dest = split_on_dest_seperator[0]
+            asm_minus_dest = split_on_dest_seperator[-1]
+            if "=" not in asm_instruction:
                 dest = None
-                asm_minus_dest = split_on_dest_seperator[0]
             split_on_jump_seperator = asm_minus_dest.split(";")    
-            try:
-                comp = split_on_jump_seperator[0]
-                jump = split_on_jump_seperator[1]
-            except IndexError:
-                comp = split_on_jump_seperator[0]
+            comp = split_on_jump_seperator[0]
+            jump = split_on_jump_seperator[-1]
+            if ";" not in asm_instruction:
                 jump = None
             return self.__translate_C_instruction(dest, comp, jump)
+
         
     def __translate_A_instruction(self, A_instruction):                                                 
         if A_instruction[1:].isnumeric():
