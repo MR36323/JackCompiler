@@ -44,14 +44,12 @@ class Assembler:
             return self.__translate_A_instruction(asm_instruction)
         else:
             if "=" not in asm_instruction:
-                dest = None
-                asm_minus_dest = asm_instruction
+                dest, asm_minus_dest = None, asm_instruction
             else:                                                            # C-instructions contain comp, with optional dest and jump fields
                 dest, asm_minus_dest = asm_instruction.split("=")            # C-instruction syntax: dest=comp;jump
             if ";" not in asm_instruction:
-                jump = None
-                comp = asm_minus_dest
-            else: 
+                jump, comp = None, asm_minus_dest
+            else:
                 comp, jump = asm_minus_dest.split(";")    
             return self.__translate_C_instruction(dest, comp, jump) 
         
