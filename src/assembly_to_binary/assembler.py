@@ -3,7 +3,7 @@ class Assembler:
     def __init__(self, asm_lines):
         self.__asm_lines = asm_lines
         self.__word_length = 16
-        self.__buffer = ""
+        self.__assembled = []
         self.__variable_table  = {
             "@R0": 0,
             "@R1": 1,
@@ -31,14 +31,12 @@ class Assembler:
         }
         self.__latest_var_value = 1023
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        asm_instruction = next(self.__asm_lines)
-        bin_instruction = self.__parse_and_translate(asm_instruction)
-        self.__add_to_buffer(bin_instruction)
-        return self.__empty_buffer()       
+    def assemble(self):
+        asm_instructions = list(iter(self.__asm_lines))
+        for asm_instruction in asm_instructions:
+            bin_instruction = self.__parse_and_translate(asm_instruction)
+            self.__assembled.append(bin_instruction)
+        return self.__assembled
     
     def __parse_and_translate(self, asm_instruction):
         if asm_instruction.startswith("@"):                                 # A-instructions start with @
@@ -128,16 +126,3 @@ class Assembler:
         else:
             bin_C_instruction = "".join((bin_C_instruction, "000"))
         return "".join(("111", bin_C_instruction))
-
-    def __add_to_buffer(self, bin_instruction):
-        if not self.__buffer:
-            self.__buffer = bin_instruction
-        else:
-            self.__buffer.append(f"\n{bin_instruction}")
-
-    def __empty_buffer(self):
-        if not self.__buffer:
-            return None
-        buffer = self.__buffer
-        self.__buffer = ""
-        return buffer
