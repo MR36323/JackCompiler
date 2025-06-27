@@ -1,10 +1,10 @@
 class Assembler:
 
     def __init__(self, asm_lines):
-        self.asm_lines = asm_lines
-        self.word_length = 16
+        self.__asm_lines = asm_lines
+        self.__word_length = 16
         self.__buffer = ""
-        self.symbol_table = {
+        self.__variable_table  = {
             "@R0": 0,
             "@R1": 1,
             "@R2": 2,
@@ -29,12 +29,13 @@ class Assembler:
             "@THIS": 3,
             "@THAT": 4,
         }
+        self.__latest_var_value = 1023
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        asm_instruction = next(self.asm_lines)
+        asm_instruction = next(self.__asm_lines)
         bin_instruction = self.__parse_and_translate(asm_instruction)
         self.__add_to_buffer(bin_instruction)
         return self.__empty_buffer()       
@@ -54,11 +55,15 @@ class Assembler:
         
     def __translate_A_instruction(self, A_instruction):                                                 
         if A_instruction[1:].isnumeric():
-            asm_instruction = int(A_instruction.lstrip("@"))
-        elif A_instruction in self.symbol_table:
-            asm_instruction = self.symbol_table[A_instruction]
-        bin_instruction = str(bin((int(asm_instruction)) % 2**15))[2:]      # Max integer size is 2^15 - 1
-        while len(bin_instruction) < self.word_length:         
+            A_instruction = int(A_instruction.lstrip("@"))
+        elif A_instruction in self.__variable_table :
+            A_instruction = self.__variable_table[A_instruction]
+        else:
+            self.__latest_var_value += 1 
+            self.__variable_table[A_instruction] = self.__latest_var_value
+            A_instruction = self.__latest_var_value
+        bin_instruction = str(bin((int(A_instruction)) % 2**15))[2:]      # Max integer size is 2^15 - 1
+        while len(bin_instruction) < self.__word_length:         
             bin_instruction = "".join(("0", bin_instruction))      
         return bin_instruction
     
