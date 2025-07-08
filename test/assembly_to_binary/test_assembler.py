@@ -1,4 +1,3 @@
-import pytest
 from src.assembly_to_binary.assembler import Assembler
 
 class TestAssemblyWithoutSymbols:
@@ -6,12 +5,12 @@ class TestAssemblyWithoutSymbols:
     def test_a_instructions_within_range(self):    
         input = ['@0', '@1', '@32767']
         expected = ['0000000000000000', '0000000000000001', '0111111111111111']
-        assert expected == Assembler(iter(input)).assemble()
+        assert expected == Assembler(input).assemble()
 
     def test_a_instructions_outside_range(self):    # Max integer size is 2^15 - 1
         input = ['@32768', '@32769', '@65535']
         expected = ['0000000000000000', '0000000000000001', '0111111111111111']
-        assert expected == Assembler(iter(input)).assemble()
+        assert expected == Assembler(input).assemble()
 
     def test_c_instructions(self):
         comps = {
@@ -89,12 +88,12 @@ class TestAssemblyWithoutSymbols:
             for jump in jumps.values():
                 bin_c_instructions.append(''.join((dest_comp, jump)))
 
-        assert bin_c_instructions == Assembler(iter(asm_c_instructions)).assemble()
+        assert bin_c_instructions == Assembler(asm_c_instructions).assemble()
 
 class TestAssemblyWithSymbols:
 
-    def test_pre_defined_symbols(self):
-        a_instructions = [
+    def test_pre_defined_variables(self):
+        asm = [
             '@R0', 
             '@R1', 
             '@R2', 
@@ -119,7 +118,7 @@ class TestAssemblyWithSymbols:
             '@THIS', 
             '@THAT'
         ]
-        expected_output = [
+        expected_bin = [
             '0000000000000000', 
             '0000000000000001', 
             '0000000000000010', 
@@ -144,10 +143,10 @@ class TestAssemblyWithSymbols:
             '0000000000000011', 
             '0000000000000100'
         ]
-        assert expected_output == Assembler(iter(a_instructions)).assemble()
+        assert expected_bin == Assembler(asm).assemble()
 
     def test_custom_variable_symbols(self):
-        a_instructions = [
+        asm = [
             '@i',
             '@i',
             '@x',
@@ -155,7 +154,7 @@ class TestAssemblyWithSymbols:
             '@i',
             '@y'
         ]
-        expected_output = [
+        expected_bin = [
             '0000010000000000',          # new variables start at ram[1024]
             '0000010000000000',
             '0000010000000001',
@@ -163,4 +162,28 @@ class TestAssemblyWithSymbols:
             '0000010000000000',
             '0000010000000010',
         ]
-        assert expected_output == Assembler(iter(a_instructions)).assemble()
+        assert expected_bin == Assembler(asm).assemble()
+
+    def test_labels(self):
+        asm = [
+            '@0',
+            '(LABEL1)', 
+            '@1', 
+            '@LABEL1',
+            '@32767',
+            '@LABEL2',
+            '@0',
+            '(LABEL2)',
+            '@1'
+        ]
+        expected_bin = [
+            '0000000000000000', 
+            '0000000000000001', 
+            '0000000000000001',
+            '0111111111111111',
+            '0000000000000110',
+            '0000000000000000', 
+            '0000000000000001' 
+        ]
+        assert expected_bin == Assembler(asm).assemble()
+

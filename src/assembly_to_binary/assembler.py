@@ -1,10 +1,11 @@
 class Assembler:
 
     def __init__(self, asm_lines):
-        self.__asm_lines = asm_lines
         self.__word_length = 16
+        self.__asm_lines = asm_lines
+        self.__translated = []
         self.__assembled = []
-        self.__variable_table  = {
+        self.__variables  = {
             '@R0': 0,
             '@R1': 1,
             '@R2': 2,
@@ -30,15 +31,20 @@ class Assembler:
             '@THAT': 4,
         }
         self.__latest_var_value = 1023
+        self.__labels = {}
 
     def assemble(self):
-        asm_instructions = list(iter(self.__asm_lines))
-        for asm_instruction in asm_instructions:
+        while self.__asm_lines:
+            asm_instruction = self.__asm_lines.pop(0)
             bin_instruction = self.__parse_and_translate(asm_instruction)
-            self.__assembled.append(bin_instruction)
+            if bin_instruction:
+                self.__translated.append(asm_instruction)
+                self.__assembled.append(bin_instruction)
         return self.__assembled
     
     def __parse_and_translate(self, asm_instruction):
+        if asm_instruction.startswith('(') and asm_instruction.endswith(')'):
+            return self.__translate_label(asm_instruction)                  # Label syntax: (label)
         if asm_instruction.startswith('@'):                                 # A-instructions start with @
             return self.__translate_A_instruction(asm_instruction)
         if '=' not in asm_instruction:                                      # C-instruction syntax: dest=comp;jump
@@ -50,15 +56,26 @@ class Assembler:
         else:
             comp, jump = asm_minus_dest.split(';')    
         return self.__translate_C_instruction(dest, comp, jump) 
+    
+    def __translate_label(self, label):
+        label = label.lstrip('(').rstrip(')')
+        if label not in self.__labels:
+            self.__labels[label] = len(self.__assembled)
+            if f'@{label}' in self.__translated:
+                label_call = f'@{self.__labels[label]}'
+                label_call = self.__translate_A_instruction(label_call)
+                self.__assembled[self.__translated.index(f'@{label}')] = label_call
         
     def __translate_A_instruction(self, A_instruction):                                                 
         if A_instruction[1:].isnumeric():
             A_instruction = int(A_instruction.lstrip('@'))
-        elif A_instruction in self.__variable_table :
-            A_instruction = self.__variable_table[A_instruction]
+        elif A_instruction.lstrip('@') in self.__labels:
+            A_instruction = self.__labels[A_instruction.lstrip('@')]
+        elif A_instruction in self.__variables:
+            A_instruction = self.__variables[A_instruction]
         else:
             self.__latest_var_value += 1 
-            self.__variable_table[A_instruction] = self.__latest_var_value
+            self.__variables[A_instruction] = self.__latest_var_value
             A_instruction = self.__latest_var_value
         bin_instruction = str(bin((int(A_instruction)) % 2**15))[2:]      # Max integer size is 2^15 - 1
         while len(bin_instruction) < self.__word_length:         
