@@ -187,3 +187,29 @@ class TestAssemblyWithSymbols:
         ]
         assert expected_bin == Assembler(asm).assemble()
 
+class TestComments:
+
+    def test_ignore_comments(self):
+        asm = [
+            '@0 // abcljslfjadlj',
+            '(LABEL1)', 
+            '@1', 
+            '@LABEL1',
+            '//alkfjds;;kja;kljdf',
+            '@32767',
+            '@LABEL2 // @LABEL1',
+            '@0',
+            '// (LABEL2) afdjslfjs',
+            '(LABEL2)',
+            '@1 // @2 afjlsajflksadjl'
+        ]
+        expected_bin = [
+            '0000000000000000', 
+            '0000000000000001', 
+            '0000000000000001',
+            '0111111111111111',
+            '0000000000000110',
+            '0000000000000000', 
+            '0000000000000001' 
+        ]
+        assert expected_bin == Assembler(asm).assemble()

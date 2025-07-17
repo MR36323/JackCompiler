@@ -36,10 +36,12 @@ class Assembler:
     def assemble(self):
         while self.__asm_lines:
             asm_instruction = self.__asm_lines.pop(0)
-            bin_instruction = self.__parse_and_translate(asm_instruction)
-            if bin_instruction:
-                self.__translated.append(asm_instruction)
-                self.__assembled.append(bin_instruction)
+            asm_instruction = self.__process_comment(asm_instruction)
+            if asm_instruction:
+                bin_instruction = self.__parse_and_translate(asm_instruction)
+                if bin_instruction:
+                    self.__translated.append(asm_instruction)
+                    self.__assembled.append(bin_instruction)
         return self.__assembled
     
     def __parse_and_translate(self, asm_instruction):
@@ -56,6 +58,9 @@ class Assembler:
         else:
             comp, jump = asm_minus_dest.split(';')    
         return self.__translate_C_instruction(dest, comp, jump) 
+    
+    def __process_comment(self, asm_instruction):
+        return asm_instruction.split('//')[0].strip()
     
     def __translate_label(self, label):
         label = label.lstrip('(').rstrip(')')
